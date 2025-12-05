@@ -1,0 +1,410 @@
+/* ============================
+   Neon Motion Drum - 霓虹動態鼓機
+   Cyberpunk Style CSS
+   ============================ */
+
+:root {
+  --neon-cyan: #00fff5;
+  --neon-pink: #ff00ff;
+  --neon-yellow: #ffff00;
+  --neon-green: #39ff14;
+  --neon-orange: #ff6600;
+  --bg-dark: #0a0a0f;
+  --bg-darker: #050508;
+  --grid-border: rgba(0, 255, 245, 0.3);
+  --text-dim: rgba(255, 255, 255, 0.6);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Courier New', monospace;
+  background: var(--bg-dark);
+  color: white;
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ============================
+   開始畫面
+   ============================ */
+#start-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-darker);
+  z-index: 1000;
+}
+
+.start-content {
+  text-align: center;
+}
+
+.neon-title {
+  font-size: clamp(3rem, 12vw, 6rem);
+  font-weight: bold;
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 10px var(--neon-cyan),
+    0 0 20px var(--neon-cyan),
+    0 0 40px var(--neon-cyan),
+    0 0 80px var(--neon-cyan);
+  letter-spacing: 0.2em;
+  animation: flicker 3s infinite alternate;
+}
+
+@keyframes flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow:
+      0 0 10px var(--neon-cyan),
+      0 0 20px var(--neon-cyan),
+      0 0 40px var(--neon-cyan),
+      0 0 80px var(--neon-cyan);
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+  }
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  color: var(--neon-pink);
+  margin-top: 0.5rem;
+  text-shadow: 0 0 10px var(--neon-pink);
+}
+
+.instruction {
+  font-size: 1rem;
+  color: var(--text-dim);
+  margin-top: 2rem;
+}
+
+#start-btn {
+  margin-top: 2rem;
+  padding: 1rem 3rem;
+  font-size: 1.5rem;
+  font-family: inherit;
+  font-weight: bold;
+  color: var(--bg-dark);
+  background: var(--neon-cyan);
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 0 20px var(--neon-cyan),
+    inset 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+#start-btn:hover {
+  background: var(--neon-pink);
+  box-shadow:
+    0 0 30px var(--neon-pink),
+    0 0 60px var(--neon-pink),
+    inset 0 0 20px rgba(255, 255, 255, 0.5);
+  transform: scale(1.05);
+}
+
+#start-btn:active {
+  transform: scale(0.98);
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 1rem;
+}
+
+/* ============================
+   主遊戲區
+   ============================ */
+#game-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+#game-container.hidden {
+  display: none;
+}
+
+/* Webcam 影片 */
+#webcam {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 水平翻轉 (鏡像) */
+  transform: scaleX(-1);
+  /* 賽博龐克濾鏡 */
+  filter: grayscale(70%) contrast(1.2) brightness(0.8);
+}
+
+/* 隱藏的偵測 canvas */
+#detection-canvas {
+  display: none;
+}
+
+/* Debug canvas */
+#debug-canvas {
+  position: fixed;
+  bottom: 80px;
+  left: 10px;
+  width: 160px;
+  height: 120px;
+  border: 2px solid var(--neon-green);
+  background: black;
+  z-index: 500;
+  image-rendering: pixelated;
+}
+
+#debug-canvas.hidden {
+  display: none;
+}
+
+/* ============================
+   3x3 霓虹格線
+   ============================ */
+#grid-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 4px;
+  padding: 4px;
+  pointer-events: none;
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--grid-border);
+  background: rgba(0, 255, 245, 0.03);
+  transition: all 0.1s ease;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.cell-label {
+  font-size: clamp(1rem, 4vw, 2rem);
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 5px rgba(0, 255, 245, 0.3);
+  user-select: none;
+}
+
+/* 觸發狀態 */
+.cell.triggered {
+  border-color: var(--neon-cyan);
+  background: rgba(0, 255, 245, 0.2);
+  box-shadow:
+    0 0 20px var(--neon-cyan),
+    0 0 40px var(--neon-cyan),
+    inset 0 0 30px rgba(0, 255, 245, 0.3);
+  animation: pulse 0.15s ease-out;
+}
+
+.cell.triggered .cell-label {
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 10px var(--neon-cyan),
+    0 0 20px var(--neon-cyan);
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* 不同格子不同顏色 (觸發時) */
+.cell[data-sound="kick"].triggered {
+  border-color: var(--neon-pink);
+  background: rgba(255, 0, 255, 0.2);
+  box-shadow:
+    0 0 20px var(--neon-pink),
+    0 0 40px var(--neon-pink),
+    inset 0 0 30px rgba(255, 0, 255, 0.3);
+}
+.cell[data-sound="kick"].triggered .cell-label {
+  color: var(--neon-pink);
+  text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink);
+}
+
+.cell[data-sound="snare"].triggered {
+  border-color: var(--neon-yellow);
+  background: rgba(255, 255, 0, 0.15);
+  box-shadow:
+    0 0 20px var(--neon-yellow),
+    0 0 40px var(--neon-yellow),
+    inset 0 0 30px rgba(255, 255, 0, 0.2);
+}
+.cell[data-sound="snare"].triggered .cell-label {
+  color: var(--neon-yellow);
+  text-shadow: 0 0 10px var(--neon-yellow), 0 0 20px var(--neon-yellow);
+}
+
+.cell[data-sound="clap"].triggered {
+  border-color: var(--neon-orange);
+  background: rgba(255, 102, 0, 0.2);
+  box-shadow:
+    0 0 20px var(--neon-orange),
+    0 0 40px var(--neon-orange),
+    inset 0 0 30px rgba(255, 102, 0, 0.3);
+}
+.cell[data-sound="clap"].triggered .cell-label {
+  color: var(--neon-orange);
+  text-shadow: 0 0 10px var(--neon-orange), 0 0 20px var(--neon-orange);
+}
+
+.cell[data-sound="synth"].triggered {
+  border-color: var(--neon-green);
+  background: rgba(57, 255, 20, 0.15);
+  box-shadow:
+    0 0 20px var(--neon-green),
+    0 0 40px var(--neon-green),
+    inset 0 0 30px rgba(57, 255, 20, 0.2);
+}
+.cell[data-sound="synth"].triggered .cell-label {
+  color: var(--neon-green);
+  text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
+}
+
+/* 手動點擊時也可觸發 */
+.cell:active {
+  background: rgba(0, 255, 245, 0.15);
+}
+
+/* ============================
+   控制面板
+   ============================ */
+#controls {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid var(--grid-border);
+  z-index: 100;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-group label {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.control-group input[type="range"] {
+  width: 100px;
+  accent-color: var(--neon-cyan);
+}
+
+.control-group span {
+  font-size: 0.8rem;
+  color: var(--neon-cyan);
+  min-width: 2.5rem;
+}
+
+.btn-small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  color: var(--neon-green);
+  background: transparent;
+  border: 1px solid var(--neon-green);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-small:hover {
+  background: rgba(57, 255, 20, 0.2);
+  box-shadow: 0 0 10px var(--neon-green);
+}
+
+.btn-small.active {
+  background: var(--neon-green);
+  color: var(--bg-dark);
+}
+
+/* ============================
+   狀態訊息
+   ============================ */
+#status {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  color: var(--neon-cyan);
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--grid-border);
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 200;
+}
+
+#status.visible {
+  opacity: 1;
+}
+
+#status.error {
+  color: #ff4444;
+  border-color: #ff4444;
+}
+
+/* ============================
+   RWD 響應式
+   ============================ */
+@media (max-width: 600px) {
+  #controls {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+
+  .control-group input[type="range"] {
+    width: 80px;
+  }
+
+  .neon-title {
+    letter-spacing: 0.1em;
+  }
+}
+
+/* ============================
+   隱藏類別
+   ============================ */
+.hidden {
+  display: none !important;
+}

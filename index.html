@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Neon Motion Drum | 霓虹動態鼓機</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- 開始畫面 (AudioContext 需要用戶互動才能啟動) -->
+  <div id="start-screen">
+    <div class="start-content">
+      <h1 class="neon-title">NEON DRUM</h1>
+      <p class="subtitle">霓虹動態鼓機</p>
+      <p class="instruction">揮動你的手，探索 9 種音效！</p>
+      <button id="start-btn">START</button>
+      <p class="hint">📷 需要攝影機偵測動作 · 不錄影 · 不上傳</p>
+    </div>
+  </div>
+
+  <!-- 主遊戲區 -->
+  <div id="game-container" class="hidden">
+    <!-- 底層：Webcam 影片 -->
+    <video id="webcam" autoplay playsinline muted></video>
+
+    <!-- 隱藏：運算用低解析度 canvas -->
+    <canvas id="detection-canvas"></canvas>
+
+    <!-- Debug canvas (開發時可見) -->
+    <canvas id="debug-canvas" class="hidden"></canvas>
+
+    <!-- 頂層：3x3 霓虹格線 -->
+    <div id="grid-overlay">
+      <div class="cell" data-index="0" data-sound="hihat">
+        <span class="cell-label">HH</span>
+      </div>
+      <div class="cell" data-index="1" data-sound="snare">
+        <span class="cell-label">SNR</span>
+      </div>
+      <div class="cell" data-index="2" data-sound="crash">
+        <span class="cell-label">CYM</span>
+      </div>
+      <div class="cell" data-index="3" data-sound="tom1">
+        <span class="cell-label">TM1</span>
+      </div>
+      <div class="cell" data-index="4" data-sound="kick">
+        <span class="cell-label">KCK</span>
+      </div>
+      <div class="cell" data-index="5" data-sound="tom2">
+        <span class="cell-label">TM2</span>
+      </div>
+      <div class="cell" data-index="6" data-sound="clap">
+        <span class="cell-label">CLP</span>
+      </div>
+      <div class="cell" data-index="7" data-sound="ride">
+        <span class="cell-label">RID</span>
+      </div>
+      <div class="cell" data-index="8" data-sound="synth">
+        <span class="cell-label">SYN</span>
+      </div>
+    </div>
+
+    <!-- 控制面板 -->
+    <div id="controls">
+      <div class="control-group">
+        <label for="sensitivity">靈敏度</label>
+        <input type="range" id="sensitivity" min="5" max="50" value="20">
+        <span id="sensitivity-value">20</span>
+      </div>
+      <div class="control-group">
+        <label for="cooldown">冷卻 (ms)</label>
+        <input type="range" id="cooldown" min="100" max="500" value="250">
+        <span id="cooldown-value">250</span>
+      </div>
+      <button id="debug-toggle" class="btn-small">Debug</button>
+    </div>
+
+    <!-- 狀態訊息 -->
+    <div id="status"></div>
+  </div>
+
+  <script type="module" src="script.js" onerror="document.getElementById('start-screen').innerHTML='<div style=\'color:#ff4444;padding:2rem;text-align:center;font-family:monospace\'><h2>載入失敗</h2><p>請確認所有檔案都在同一目錄</p><p style=\'font-size:0.8rem;color:#888\'>或開啟開發者工具 (F12) 查看詳細錯誤</p></div>'"></script>
+  <script nomodule>
+    // 不支援 ES6 module 的瀏覽器顯示提示
+    document.getElementById('start-screen').innerHTML = '<div style="color:#ff4444;padding:2rem;text-align:center;font-family:monospace"><h2>瀏覽器不支援</h2><p>請使用 Chrome、Firefox 或 Safari 開啟</p></div>';
+  </script>
+</body>
+</html>
