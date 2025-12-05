@@ -20,3 +20,6 @@ build/
 # Temporary files
 *.tmp
 *.temp
+
+# Analytics (含敏感 ID)
+analytics.js
