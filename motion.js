@@ -68,13 +68,43 @@ export class MotionDetector {
     const now = Date.now();
     const triggered = [];
 
-    // 1. 繪製到小 canvas (水平翻轉)
+    // 1. 繪製到小 canvas (水平翻轉 + 模擬 object-fit: cover)
     // 使用 try-catch 保護，某些瀏覽器 (Safari) 可能拋出 InvalidStateError
     let imageData;
     try {
+      const vw = this.video.videoWidth;
+      const vh = this.video.videoHeight;
+
+      // 計算 object-fit: cover 的裁切區域
+      // 確保偵測座標與視覺顯示一致
+      const videoRatio = vw / vh;
+      const canvasRatio = this.width / this.height;
+
+      let sx, sy, sw, sh;
+
+      if (videoRatio > canvasRatio) {
+        // video 較寬，左右裁切
+        sh = vh;
+        sw = vh * canvasRatio;
+        sx = (vw - sw) / 2;
+        sy = 0;
+      } else {
+        // video 較高，上下裁切
+        sw = vw;
+        sh = vw / canvasRatio;
+        sx = 0;
+        sy = (vh - sh) / 2;
+      }
+
       this.ctx.save();
       this.ctx.scale(-1, 1);
-      this.ctx.drawImage(this.video, -this.width, 0, this.width, this.height);
+      // 使用 9 參數版本的 drawImage: (image, sx, sy, sw, sh, dx, dy, dw, dh)
+      // 只繪製 video 的可見區域（模擬 object-fit: cover）
+      this.ctx.drawImage(
+        this.video,
+        sx, sy, sw, sh,           // 來源區域（裁切後）
+        -this.width, 0, this.width, this.height  // 目標區域
+      );
       this.ctx.restore();
 
       // 2. 取得像素資料
