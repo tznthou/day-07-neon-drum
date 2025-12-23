@@ -228,16 +228,16 @@ class NeonDrum {
    * 取得友善的錯誤訊息
    */
   getErrorMessage(error) {
-    if (error.name === 'NotAllowedError') {
-      return '攝影機權限被拒絕，請允許使用攝影機';
-    }
-    if (error.name === 'NotFoundError') {
-      return '找不到攝影機裝置';
-    }
-    if (error.name === 'NotReadableError') {
-      return '攝影機被其他程式使用中';
-    }
-    return `發生錯誤: ${error.message}`;
+    const errorMessages = {
+      'NotAllowedError': '攝影機權限被拒絕，請允許使用攝影機',
+      'NotFoundError': '找不到攝影機裝置',
+      'NotReadableError': '攝影機被其他程式使用中',
+      'OverconstrainedError': '攝影機不支援所需的解析度，請嘗試其他攝影機',
+      'AbortError': '攝影機啟動被中斷，請重新嘗試',
+      'SecurityError': '安全性限制：請確認網頁使用 HTTPS 或 localhost',
+      'TypeError': '攝影機參數設定錯誤',
+    };
+    return errorMessages[error.name] || `發生錯誤: ${error.message}`;
   }
 
   /**
@@ -268,4 +268,14 @@ class NeonDrum {
 // 啟動應用程式
 document.addEventListener('DOMContentLoaded', () => {
   window.neonDrum = new NeonDrum();
+
+  // 支援透過 URL 參數載入診斷工具: ?diag 或 ?diag=1
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('diag')) {
+    const script = document.createElement('script');
+    script.src = 'diag.js';
+    script.onerror = () => console.error('診斷工具載入失敗');
+    document.body.appendChild(script);
+    console.log('💡 診斷工具將在點擊 START 後自動執行');
+  }
 });

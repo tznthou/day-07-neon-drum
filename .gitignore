@@ -7,6 +7,9 @@
 *.swp
 *.swo
 
+# Claude Code 本機設定
+.claude/
+
 # Dependencies (if any)
 node_modules/
 
@@ -23,3 +26,6 @@ build/
 
 # Analytics (含敏感 ID)
 analytics.js
+
+# Code Review 報告
+CODE_REVIEW*.md
