@@ -109,8 +109,13 @@ graph TD
 
 如果遇到「部分格子沒有反應」的問題，可以使用診斷工具：
 
+**推薦方式**：在網址後加上 `?diag` 參數
+```
+https://tznthou.github.io/day-07-neon-drum/?diag
+```
+
+**備用方式**：在瀏覽器 Console 中手動載入
 ```javascript
-// 在瀏覽器 Console 中執行
 fetch('diag.js').then(r=>r.text()).then(eval)
 ```
 
