@@ -1,6 +1,6 @@
 # Day 07 - Neon Motion Drum 霓虹動態鼓機
 
-> [← 回到 Muripo HQ](https://tznthou.github.io/muripo-hq/)
+> [← 回到 Muripo HQ](https://tznthou.github.io/muripo-hq/) | [English](README_EN.md)
 
 用 Webcam 偵測手部動作，揮手觸發霓虹鼓聲！
 
@@ -160,3 +160,9 @@ fetch('diag.js').then(r=>r.text()).then(eval)
 ## License
 
 [MIT](LICENSE)
+
+---
+
+## 作者
+
+子超 - [tznthou@gmail.com](mailto:tznthou@gmail.com)
